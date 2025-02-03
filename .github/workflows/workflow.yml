@@ -1,5 +1,4 @@
 env:
-  RUBY_VERSION: 3.0.0
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
   POSTGRES_DB: postgres
@@ -13,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-ruby@v1    # Changed from v1.4.0
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ env.RUBY_VERSION }}
+          ruby-version:  '3.0.2'
       - name: Install Rubocop
         run: gem install rubocop
       - name: Check code
@@ -25,8 +24,38 @@ jobs:
     name: RSpec
     needs: rubocop-test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-ruby@v1    # Changed from v1.4.0
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ env.RUBY_VERSION }}
+          ruby-version:  '3.0.2'
+          bundler-cache: true
+      - name: Install postgres client
+        run: sudo apt-get install libpq-dev
+      - name: Create database
+        run: |
+          bundler exec rails db:create RAILS_ENV=test
+          bundler exec rails db:migrate RAILS_ENV=test
+      - name: Run tests
+        run: bundler exec rake
+      - name: Upload coverage results    
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage
