@@ -1,0 +1,26 @@
+
+---
+ar_internal_metadata:
+  columns:
+  - key
+  - value
+  - created_at
+  - updated_at
+  records: 
+  - - environment
+    - development
+    - 2025-01-21 00:43:04.295219000 Z
+    - 2025-01-21 00:43:04.295219000 Z
+
+---
+books:
+  columns:
+  - id
+  - title
+  - created_at
+  - updated_at
+  records: 
+  - - 1
+    - Drive My Car
+    - 2025-01-21 00:50:42.228092000 Z
+    - 2025-01-21 00:50:42.228092000 Z
