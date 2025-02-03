@@ -1,36 +1,48 @@
 env:
-  RUBY_VERSION: 2.4
+  RUBY_VERSION: 3.0.0
   POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: ""
+  POSTGRES_PASSWORD: postgres
   POSTGRES_DB: postgres
 
 name: Rails tests
-on: [push,pull_request]
+on: [push, pull_request]
+
 jobs:
   rubocop-test:
     name: Rubocop
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-ruby@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-ruby@v1.4.0
         with:
           ruby-version: ${{ env.RUBY_VERSION }}
       - name: Install Rubocop
         run: gem install rubocop
       - name: Check code
         run: rubocop
+
   rspec-test:
     name: RSpec
     needs: rubocop-test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:latest
         ports:
-        - 5432:5432
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-ruby@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-ruby@v1.4.0
         with:
           ruby-version: ${{ env.RUBY_VERSION }}
       - name: Install postgres client
@@ -50,4 +62,4 @@ jobs:
         if: always()
         with:
           name: coverage-report
-          path: coverage 
+          path: coverage
